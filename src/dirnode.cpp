@@ -52,8 +52,7 @@ RDirNode::RDirNode(RDirNode* parent, const std::string & abspath) {
         pos = vec2(0.0f, 0.0f);
     }
 
-    //float padded_file_radius  = gGourceFileDiameter * 0.5;
-    float padded_file_radius = gGourceSettings.basic_diameter * 0.5;
+    float padded_file_radius  = gGourceFileDiameter * 0.5;
 
     file_area  = padded_file_radius * padded_file_radius * PI;
 
@@ -861,8 +860,7 @@ void RDirNode::updateFilePositions() {
 
         if(file_no>=max_files) {
             diameter++;
-            //d += gGourceFileDiameter;
-            d += gGourceSettings.basic_diameter;
+            d += gGourceFileDiameter;
             max_files = (int) std::max(1.0, diameter*PI);
 
             if(files_left<max_files) {
@@ -1033,7 +1031,6 @@ void RDirNode::updateFilesVBO(quadbuf& buffer, float dt) const{
         for(std::list<RFile*>::const_iterator it = files.begin(); it!=files.end(); it++) {
             RFile* f = *it;
 
-            f->UpdateSize(); //................................................ Update the size
             if(f->isHidden()) continue;
 
             vec3 col   = f->getColour();
@@ -1081,7 +1078,7 @@ void RDirNode::drawFiles(float dt) const{
             for(std::list<RFile*>::const_iterator it = files.begin(); it!=files.end(); it++) {
                 RFile* f = *it;
                 if(f->isHidden()) continue;
-                f->UpdateSize();
+
                 f->draw(dt);
             }
 

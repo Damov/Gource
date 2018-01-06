@@ -21,7 +21,6 @@
 #include "pawn.h"
 #include "dirnode.h"
 #include "core/stringhash.h"
-#include "formats/commitlog.h"
 
 class RDirNode;
 
@@ -33,8 +32,6 @@ class RFile : public Pawn {
 
     bool forced_removal;
     bool expired;
-
-    RCommitFile *cf;
 
     float fade_start;
     
@@ -58,7 +55,7 @@ public:
     std::string fullpath;
     std::string ext;
 
-    RFile(const std::string & name, const vec3 & colour, const vec2 & pos, int tagid, RCommitFile *cmfile);
+    RFile(const std::string & name, const vec3 & colour, const vec2 & pos, int tagid);
     ~RFile();
 
     bool overlaps(const vec2& pos) const;
@@ -92,10 +89,6 @@ public:
 
     RDirNode* getDir() const;
     void setDir(RDirNode* dir);
-
-    void SetSize(float new_size);
-    void UpdateSize();
-
 };
 
 extern float gGourceFileDiameter;

@@ -24,20 +24,9 @@ std::vector<RFile*> gGourceRemovedFiles;
 FXFont file_selected_font;
 FXFont file_font;
 
-RFile::RFile(const std::string & name, const vec3 & colour, const vec2 & pos, int tagid,
-             RCommitFile *cmfile) : Pawn(name,pos,tagid) {
+RFile::RFile(const std::string & name, const vec3 & colour, const vec2 & pos, int tagid) : Pawn(name,pos,tagid) {
     hidden = true;
-
-//--Set commit file to $cmfile
-    cf = cmfile;
-
-//--Set initial file icon radius------------------------------------------------
-    //size = gGourceFileDiameter * 1.05;
-    size   = gGourceSettings.basic_diameter * 1.05;
-    if( gGourceSettings.file_radius_by_code_lines ){ //........................ Adjust size
-        long code_lines = cf->lines;
-        size += gGourceSettings.diamgrow_per_code_line * code_lines;
-    }
+    size = gGourceFileDiameter * 1.05;
     radius = size * 0.5;
 
     setGraphic(gGourceSettings.file_graphic);
@@ -53,7 +42,6 @@ RFile::RFile(const std::string & name, const vec3 & colour, const vec2 & pos, in
     fade_start     = -1.0f;
     expired        = false;
     forced_removal = false;
-
 
     shadow = true;
 
@@ -325,27 +313,7 @@ void RFile::drawNameText(float alpha) {
 }
 
 void RFile::draw(float dt) {
-    UpdateSize();
     Pawn::draw(dt);
 
     glLoadName(0);
-}
-
-// Set new size
-void RFile::SetSize(float new_size){
-    size   = new_size;
-    radius = new_size / 2;
-    setGraphic(gGourceSettings.file_graphic);
-    return;
-}
-
-// Update size
-void RFile::UpdateSize(){
-    size   = gGourceSettings.basic_diameter * 1.05;
-    if( gGourceSettings.file_radius_by_code_lines ){ //........................ Adjust size
-        long code_lines = cf->lines;
-        size += gGourceSettings.diamgrow_per_code_line * code_lines;
-    }
-    radius = size * 0.5;
-    setGraphic(gGourceSettings.file_graphic);
 }

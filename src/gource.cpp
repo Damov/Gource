@@ -967,7 +967,8 @@ void Gource::deleteFile(RFile* file) {
     delete file;
 }
 
-RFile* Gource::addFile(RCommitFile& cf) {
+
+RFile* Gource::addFile(const RCommitFile& cf) {
 
     //if we already have max files in circulation
     //we cant add any more
@@ -981,7 +982,7 @@ RFile* Gource::addFile(RCommitFile& cf) {
 
     int tagid = tag_seq++;
 
-    RFile* file = new RFile(cf.filename, cf.colour, vec2(0.0,0.0), tagid, &cf);
+    RFile* file = new RFile(cf.filename, cf.colour, vec2(0.0,0.0), tagid);
 
     files[cf.filename] = file;
     tagfilemap[tagid]  = file;
