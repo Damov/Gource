@@ -63,6 +63,8 @@ public:
 
     bool overlaps(const vec2& pos) const;
 
+    float GetRadius(){ return radius; }
+
     void setFileColour(const vec3 & colour);
     const vec3 & getFileColour() const;
     vec3 getColour() const;
@@ -79,6 +81,8 @@ public:
     void setHidden(bool hidden);
 
     void setDest(const vec2 & dest){ this->dest = dest; }
+    const vec2 & getDest(){ return dest; }
+
     void setDistance(float distance){ this->distance = distance; }
 
     void calcScreenPos(GLint* viewport, GLdouble* modelview, GLdouble* projection);

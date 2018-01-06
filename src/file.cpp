@@ -32,15 +32,7 @@ RFile::RFile(const std::string & name, const vec3 & colour, const vec2 & pos, in
     cf = cmfile;
 
 //--Set initial file icon radius------------------------------------------------
-    //size = gGourceFileDiameter * 1.05;
-    size   = gGourceSettings.basic_diameter * 1.05;
-    if( gGourceSettings.file_radius_by_code_lines ){ //........................ Adjust size
-        long code_lines = cf->lines;
-        size += gGourceSettings.diamgrow_per_code_line * code_lines;
-    }
-    radius = size * 0.5;
-
-    setGraphic(gGourceSettings.file_graphic);
+    UpdateSize();
 
     speed = 5.0;
     nametime = gGourceSettings.filename_time;
@@ -346,6 +338,12 @@ void RFile::UpdateSize(){
         long code_lines = cf->lines;
         size += gGourceSettings.diamgrow_per_code_line * code_lines;
     }
+
+    if( size > gGourceSettings.max_diameter ){
+        //printf("Size: %f | Max diameter: %f\n", size, gGourceSettings.max_diameter );
+        size = gGourceSettings.max_diameter;
+    }
+
     radius = size * 0.5;
     setGraphic(gGourceSettings.file_graphic);
 }

@@ -16,6 +16,7 @@
 */
 
 #include "dirnode.h"
+#include <math.h>
 
 float gGourceMinDirSize   = 15.0;
 
@@ -53,7 +54,9 @@ RDirNode::RDirNode(RDirNode* parent, const std::string & abspath) {
     }
 
     //float padded_file_radius  = gGourceFileDiameter * 0.5;
-    float padded_file_radius = gGourceSettings.basic_diameter * 0.5;
+    //float padded_file_radius = gGourceSettings.basic_diameter * 0.5;
+    float padded_file_radius = gGourceSettings.max_diameter * 0.5;
+
 
     file_area  = padded_file_radius * padded_file_radius * PI;
 
@@ -845,6 +848,8 @@ void RDirNode::updateFilePositions() {
     for(std::list<RFile*>::iterator it = files.begin(); it!=files.end(); it++) {
         RFile* f = *it;
 
+        f->UpdateSize();
+
         if(f->isHidden()) {
             f->setDest(vec2(0.0,0.0));
             f->setDistance(0.0f);
@@ -872,6 +877,55 @@ void RDirNode::updateFilePositions() {
             file_no=0;
         }
     }
+
+    ResolveOverlapps();
+}
+
+void RDirNode::ResolveOverlapps(){
+    int reslvd_conflicts = 0;
+
+    for(std::list<RFile*>::iterator it = files.begin(); it!=--files.end(); it++) {
+        RFile* f      = *it;
+        RFile* f_next = *(next(it, 1));
+
+        float r01 = f->GetRadius(); //......................................... Radius of first file
+        float r02 = f_next->GetRadius(); //.................................... Radius of second file
+
+        vec2 pos01 = f->getPos() + f->getDest(); //............................ relative position of file 01
+        vec2 pos02 = f_next->getPos() + f_next->getDest(); //.................. relative position of file 02
+        vec2 dx    = pos02 - pos01;
+
+        /*
+        printf(" Radius 01: %f | x=%f, y=%f |\n", r01, pos01.x, pos01.y );
+        printf( f->path.c_str() );
+        printf(" \n" );
+        printf(" Radius 02: %f | x=%f, y=%f |\n", r02, pos02.x, pos02.y );
+        printf( f_next->path.c_str() );
+        printf(" \n" );
+        */
+
+        float dist = sqrt( dx.x * dx.x
+                         + dx.y * dx.y );
+        //printf("Distance: %f\n", dist);
+
+
+    //--Check if they collide---------------------------------------------------
+        if ( dist < (r01 + r02) ){
+            reslvd_conflicts++;
+        //--Compute total overlap distance--------------------------------------
+            float overlap_dist = (r01+r02) - dist;
+        //--Push out the circles------------------------------------------------
+            vec2 dest01 = pos01 - overlap_dist/2 * dx;
+            vec2 dest02 = pos02 + overlap_dist/2 * dx;
+
+            f->setDest( dest01);
+            f->setDest( dest02);
+        }
+    }
+//--Run this function recursively if conflicts had been detected and resolved---
+    //if (reslvd_conflicts > 0)
+    //    ResolveOverlapps();
+    return;
 }
 
 void RDirNode::calcEdges() {

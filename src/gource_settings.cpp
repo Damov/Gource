@@ -79,7 +79,9 @@ void GourceSettings::help(bool extended_help) {
 
     printf("  --file-grow                      Show file with diameter adjusted by amount of code lines\n");
     printf("  -d, --diameter FLOAT             Diameter of the file (default: 8)\n");
+    printf("  --max-diameter FLOAT             Maximal diameter of the file \n");
     printf("  -g, --diameter-grow-rate FLOAT   Diameter grow rate per code line (default: 1)\n");
+
 
     printf("  --user-image-dir DIRECTORY       Dir containing images to use as avatars\n");
     printf("  --default-user-image IMAGE       Default user image file\n");
@@ -280,6 +282,7 @@ GourceSettings::GourceSettings() {
     arg_types["time-scale"]         = "float";
     arg_types["diameter-grow-rate"] = "float";
     arg_types["diameter"]           = "float";
+    arg_types["max-diameter"]       = "float";
 
     arg_types["max-files"] = "int";
     arg_types["font-size"] = "int";
@@ -433,6 +436,7 @@ void GourceSettings::setGourceDefaults() {
     file_radius_by_code_lines = false;
     basic_diameter = 8.0;
     diamgrow_per_code_line = 1.0;
+    max_diameter = 20.0;
 
     follow_users.clear();
     highlight_users.clear();
@@ -1096,6 +1100,18 @@ void GourceSettings::importGourceSettings(ConfFile& conffile, ConfSection* gourc
         }
 
         basic_diameter = diam;
+    }
+
+    if((entry = gource_settings->getEntry("max-diameter")) != 0) {
+
+        if(!entry->hasValue()) conffile.entryException(entry, "specify maximal diameter of the file");
+
+        float max_dia = entry->getFloat();
+        
+        if(max_dia<basic_diameter) {
+            conffile.invalidValueException(entry);
+        }
+        max_diameter = max_dia;
     }
 
     if((entry = gource_settings->getEntry("auto-skip-seconds")) != 0) {
