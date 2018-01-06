@@ -48,6 +48,10 @@ public:
     bool show_lines;
     int key_threshold;
 
+    bool file_radius_by_code_lines; //............ Trigger to show radius of file according to code lines
+    float basic_diameter; //...................... Basic radius of a file
+    float diamgrow_per_code_line;  //............. Δr per one code line
+
     std::string load_config;
     std::string save_config;
     std::string path;

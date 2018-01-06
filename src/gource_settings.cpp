@@ -77,6 +77,10 @@ void GourceSettings::help(bool extended_help) {
     printf("  --key-threshold NUMBER           Show a file extension when it reaches NUMBER (0 show always)\n");
     printf("  --lines                          Show the lines of code by file extension (git only)\n\n");
 
+    printf("  --file-grow                      Show file with diameter adjusted by amount of code lines\n");
+    printf("  -d, --diameter FLOAT             Diameter of the file (default: 8)\n");
+    printf("  -g, --diameter-grow-rate FLOAT   Diameter grow rate per code line (default: 1)\n");
+
     printf("  --user-image-dir DIRECTORY       Dir containing images to use as avatars\n");
     printf("  --default-user-image IMAGE       Default user image file\n");
     printf("  --colour-images                  Colourize user images\n\n");
@@ -204,6 +208,7 @@ GourceSettings::GourceSettings() {
     arg_aliases["H"] = "extended-help";
     arg_aliases["b"] = "background-colour";
     arg_aliases["c"] = "time-scale";
+    arg_aliases["d"] = "diameter";
     arg_aliases["background"]          = "background-colour";
     arg_aliases["disable-bloom"]       = "hide-bloom";
     arg_aliases["disable-progress"]    = "hide-progress";
@@ -250,6 +255,7 @@ GourceSettings::GourceSettings() {
     arg_types["key"]             = "bool";
     arg_types["key-threshold"]   = "int";
     arg_types["lines"]           = "bool";
+    arg_types["file-grow"]       = "bool";
     arg_types["ffp"]             = "bool";
 
     arg_types["disable-auto-rotate"] = "bool";
@@ -262,16 +268,18 @@ GourceSettings::GourceSettings() {
     arg_types["hg-log-command"] = "bool";
     arg_types["bzr-log-command"]= "bool";
 
-    arg_types["bloom-intensity"]   = "float";
-    arg_types["bloom-multiplier"]  = "float";
-    arg_types["elasticity"]        = "float";
-    arg_types["seconds-per-day"]   = "float";
-    arg_types["auto-skip-seconds"] = "float";
-    arg_types["stop-at-time"]      = "float";
-    arg_types["max-user-speed"]    = "float";
-    arg_types["user-friction"]     = "float";
-    arg_types["padding"]           = "float";
-    arg_types["time-scale"]        = "float";
+    arg_types["bloom-intensity"]    = "float";
+    arg_types["bloom-multiplier"]   = "float";
+    arg_types["elasticity"]         = "float";
+    arg_types["seconds-per-day"]    = "float";
+    arg_types["auto-skip-seconds"]  = "float";
+    arg_types["stop-at-time"]       = "float";
+    arg_types["max-user-speed"]     = "float";
+    arg_types["user-friction"]      = "float";
+    arg_types["padding"]            = "float";
+    arg_types["time-scale"]         = "float";
+    arg_types["diameter-grow-rate"] = "float";
+    arg_types["diameter"]           = "float";
 
     arg_types["max-files"] = "int";
     arg_types["font-size"] = "int";
@@ -421,6 +429,10 @@ void GourceSettings::setGourceDefaults() {
     user_idle_time = 3.0f;
     user_friction  = 1.0f;
     user_scale     = 1.0f;
+
+    file_radius_by_code_lines = false;
+    basic_diameter = 8.0;
+    diamgrow_per_code_line = 1.0;
 
     follow_users.clear();
     highlight_users.clear();
@@ -1060,6 +1072,32 @@ void GourceSettings::importGourceSettings(ConfFile& conffile, ConfSection* gourc
         days_per_second = 1.0 / seconds_per_day;
     }
 
+    if((entry = gource_settings->getEntry("diameter-grow-rate")) != 0) {
+
+        if(!entry->hasValue()) conffile.entryException(entry, "specify diameter grow rate per code line");
+
+        float diam_grow_rate_per_code_line = entry->getFloat();
+
+        if(diam_grow_rate_per_code_line<=0.0f) {
+            conffile.invalidValueException(entry);
+        }
+
+        diamgrow_per_code_line = diam_grow_rate_per_code_line;
+    }
+
+    if((entry = gource_settings->getEntry("diameter")) != 0) {
+
+        if(!entry->hasValue()) conffile.entryException(entry, "specify diameter of the file");
+
+        float diam = entry->getFloat();
+
+        if(diam<0.0f) {
+            conffile.invalidValueException(entry);
+        }
+
+        basic_diameter = diam;
+    }
+
     if((entry = gource_settings->getEntry("auto-skip-seconds")) != 0) {
 
         if(!entry->hasValue()) conffile.entryException(entry, "specify auto-skip-seconds (seconds)");
@@ -1201,6 +1239,10 @@ void GourceSettings::importGourceSettings(ConfFile& conffile, ConfSection* gourc
 
     if(gource_settings->getBool("lines")) {
         show_lines = true;
+    }
+
+    if(gource_settings->getBool("file-grow")) {
+        file_radius_by_code_lines = true;
     }
 
     if(gource_settings->getBool("ffp")) {
